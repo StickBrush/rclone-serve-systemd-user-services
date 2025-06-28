@@ -1,0 +1,30 @@
+# User service for Rclone serving in S3
+#
+# Place in ~/.config/systemd/user/
+# File must include the '@' (ex rclone-serve-s3@.service)
+# As your normal user, run 
+#   systemctl --user daemon-reload
+# You can now start/enable each remote by using rclone-serve-s3@<remote>
+#   systemctl --user enable --now rclone-serve-s3@dropbox
+
+[Unit]
+Description=rclone: Remote serving filesystem for storage config %i
+Documentation=man:rclone(1)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+ExecStart= \
+  /usr/bin/rclone serve s3 \
+    --config=%h/.config/rclone/rclone.conf \
+    --vfs-cache-mode writes \
+    --vfs-cache-max-size 100M \
+    --log-level INFO \
+    --log-file /tmp/rclone-serve-s3-%i.log \
+    --umask 022 \
+    --allow-other \
+    %i: --addr 0.0.0.0:$(ruby -e 'require "socket"; puts Addrinfo.tcp("", 0).bind {|s| s.local_address.ip_port }')
+
+[Install]
+WantedBy=default.target
