@@ -15,16 +15,16 @@ Wants=network-online.target
 
 [Service]
 Type=notify
-ExecStart= \
-  /usr/bin/rclone serve webdav \
+ExecStart= /bin/bash \
+  -c '/usr/bin/rclone serve webdav \
     --config=%h/.config/rclone/rclone.conf \
     --vfs-cache-mode writes \
     --vfs-cache-max-size 100M \
     --log-level INFO \
     --log-file /tmp/rclone-serve-webdav-%i.log \
     --umask 022 \
-    --allow-other \
-    %i: --addr 0.0.0.0:$(ruby -e 'require "socket"; puts Addrinfo.tcp("", 0).bind {|s| s.local_address.ip_port }')
+    %i: --addr 0.0.0.0:80'
+    # For a random unused port, change the standard port by `ruby -e \'require "socket"; puts Addrinfo.tcp("", 0).bind {|s| s.local_address.ip_port }\'`'
 
 [Install]
 WantedBy=default.target
